@@ -5,8 +5,10 @@ const Web3 = require('web3');
 
 (async () => {
     try {
-        let network = process.argv[2];
-        let web3 = new Web3(networkParser(network));
+        let network = process.argv[2] || 'mainnet';
+        let host = networkParser(network);
+        console.log(`Going to connect to ${host}`);
+        let web3 = new Web3(host);
         let networkSettings = rskNetworkSettings.getNetworkSettingsForThisNetwork(network);
         
         let result = await getPowpegDetails(web3, networkSettings);

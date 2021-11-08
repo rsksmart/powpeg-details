@@ -7,7 +7,7 @@ module.exports = (network) => {
     if (NETWORKS[network]) {
         return NETWORKS[network];
     }
-    if (network.startsWith('http')) {
+    if (network && network.startsWith('http')) {
         return network;
     }
     throw new Error(`${network} is not a valid value for the host to connect to. Accepted values: ${Object.keys(NETWORKS)} or an http url`);

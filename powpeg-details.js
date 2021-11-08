@@ -34,7 +34,7 @@ module.exports = async (web3, networkSettings) => {
     if (federationCreationBlockNumber >= networkSettings.getNetworkUpgradesActivationHeights().getActivationHeight('iris')) {
         redeemScript = RedeemScriptParser.getErpRedeemScript(
             btcPublicKeys, 
-            networkSettings.getErpDetails().getErpPubKeys(), 
+            networkSettings.getErpDetails().getErpPublicKeys(), 
             networkSettings.getErpDetails().getCsvValue()
         ).toString('hex');
     } else {

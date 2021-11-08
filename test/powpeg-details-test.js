@@ -59,7 +59,7 @@ describe('Get Powpeg Details', () => {
     }
 
     const erpDetailsStub = {
-        getErpPubKeys: () => {
+        getErpPublicKeys: () => {
             return ['0x1', '0x2'];
         },
         getCsvValue: () => {
