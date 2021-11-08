@@ -1,6 +1,6 @@
 {
   "name": "powpeg-details",
-  "version": "0.1.0-beta",
+  "version": "0.1.1-beta",
   "description": "Tool to get the current powpeg details",
   "main": "powpeg-details.js",
   "scripts": {

@@ -10,7 +10,7 @@ This is a beta version until audited by the security team. Any comments or sugge
 
 ### Install dependencies
 ```
-npm install
+npm ci
 ```
 
 ### Run Project
