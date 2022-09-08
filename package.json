@@ -20,6 +20,6 @@
     "rewire": "^5.0.0",
     "sinon": "^11.1.2",
     "rsk-network-settings": "github:rsksmart/rsk-network-settings.git",
-    "web3": "^1.5.2"
+    "web3": "^1.7.5"
   }
 }
