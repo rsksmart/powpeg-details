@@ -31,12 +31,23 @@ module.exports = async (web3, networkSettings) => {
     const federationCreationBlockNumber = await bridge.methods.getFederationCreationBlockNumber().call();
 
     let redeemScript;
-    if (federationCreationBlockNumber >= networkSettings.getNetworkUpgradesActivationHeights().getActivationHeight('iris')) {
-        redeemScript = RedeemScriptParser.getErpRedeemScript(
-            btcPublicKeys, 
-            networkSettings.getErpDetails().getErpPublicKeys(), 
-            networkSettings.getErpDetails().getCsvValue()
-        ).toString('hex');
+    if (federationCreationBlockNumber >= networkSettings.getNetworkUpgradesActivationHeights().getActivationHeight('hop')) {
+        redeemScript = (await bridge.methods.getActivePowpegRedeemScript().call()).substring(2);
+    } else if (federationCreationBlockNumber >= networkSettings.getNetworkUpgradesActivationHeights().getActivationHeight('iris')
+            && federationCreationBlockNumber < networkSettings.getNetworkUpgradesActivationHeights().getActivationHeight('hop')) {
+        const federationAddress = await bridge.methods.getFederationAddress().call();
+        redeemScript = RedeemScriptParser.getPowpegRedeemScript(btcPublicKeys).toString('hex');
+        if (federationAddress != RedeemScriptParser.getAddressFromRedeemScript(networkSettings.getNetworkName(), redeemScript)) {
+            redeemScript = RedeemScriptParser.getP2shErpRedeemScript(
+                btcPublicKeys, 
+                networkSettings.getErpDetails().getErpPublicKeys(), 
+                networkSettings.getErpDetails().getCsvValue()
+            ).toString('hex');
+
+            if (federationAddress != RedeemScriptParser.getAddressFromRedeemScript(networkSettings.getNetworkName(), redeemScript)) {
+                throw new Error("RedeemScript could not be parsed");
+            }
+        }
     } else {
         redeemScript = RedeemScriptParser.getPowpegRedeemScript(btcPublicKeys).toString('hex');
     }

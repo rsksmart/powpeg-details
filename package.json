@@ -19,7 +19,7 @@
     "nyc": "^15.1.0",
     "rewire": "^5.0.0",
     "sinon": "^11.1.2",
-    "rsk-network-settings": "git+https://github.com/rsksmart/rsk-network-settings",
+    "rsk-network-settings": "git+https://github.com/rsksmart/rsk-network-settings#update-network-csvvalue",
     "web3": "^1.5.2"
   }
 }
