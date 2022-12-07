@@ -21,8 +21,8 @@ class PowpegDetails {
     }
 }
 
-const getActivePowpegRedeemScript = async(bridgeInstance, networkSettings, federationCreationBlockNumber) => {
-    let redeemScript;
+const getActivePowpegRedeemScript = async(bridgeInstance, networkSettings, pegnatoryPublicKeys, federationCreationBlockNumber) => {
+    const btcPublicKeys = getFedBtcKeys(pegnatoryPublicKeys);
     if (federationCreationBlockNumber >= networkSettings.getNetworkUpgradesActivationHeights().getActivationHeight('hop')) {
         // Use the Bridge method added in Hop that returns the active powpeg redeem script
         return (await bridgeInstance.methods.getActivePowpegRedeemScript().call()).substring(2);
@@ -53,9 +53,13 @@ module.exports = async (web3, networkSettings) => {
     const federationThreshold = await bridgeInstance.methods.getFederationThreshold().call();
     const federationAddress = await bridgeInstance.methods.getFederationAddress().call();
     const pegnatoryPublicKeys = await getFederationPublicKeys(bridgeInstance);
-    const btcPublicKeys = getFedBtcKeys(pegnatoryPublicKeys);
     const federationCreationBlockNumber = await bridgeInstance.methods.getFederationCreationBlockNumber().call();
-    const redeemScript = await getActivePowpegRedeemScript(bridgeInstance, networkSettings, federationCreationBlockNumber);
+    const redeemScript = await getActivePowpegRedeemScript(
+        bridgeInstance, 
+        networkSettings, 
+        pegnatoryPublicKeys, 
+        federationCreationBlockNumber
+    );
 
     return new PowpegDetails(
         Number(federationSize), 
