@@ -78,11 +78,12 @@ const getBridgeInstanceStub = (options) => {
                 call: () => {
                     if (type === 'btc') {
                         return Promise.resolve(options.federatorPublicKeyOfType.btc || "0x023f0283519167f1603ba92b060146baa054712b938a61f35605ba08773142f4da")
-                    } else if (type === 'rsk') {
+                    } 
+                    if (type === 'rsk') {
                         return Promise.resolve(options.federatorPublicKeyOfType.rsk || "0x0287b87976b0de1ef3c104b1e951e786aa78f71aedb3af9ec4ef89985bdaaa9f48")
-                    } else {
-                        return Promise.resolve(options.federatorPublicKeyOfType.default || "0x02e65505c63cae9fd963afae2aba57a7fda7c5aa5cc9198e30bb2f17497e38fcc4")
                     }
+                    
+                    return Promise.resolve(options.federatorPublicKeyOfType.default || "0x02e65505c63cae9fd963afae2aba57a7fda7c5aa5cc9198e30bb2f17497e38fcc4")
                 }
             }),
             getFederationCreationBlockNumber: () => ({
