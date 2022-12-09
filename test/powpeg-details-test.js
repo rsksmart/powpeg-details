@@ -15,79 +15,25 @@ const stubFederationRedeemScript = '5321023f0283519167f1603ba92b060146baa054712b
 const stubFederationRedeemScriptERP = '645321023f0283519167f1603ba92b060146baa054712b938a61f35605ba08773142f4da2102afc230c2d355b1a577682b07bc2646041b5d0177af0f98395a46018da699b6da21031174d64db12dc2dcdc8064a53a4981fa60f4ee649a954e01bcae221fc60777a2210344a3c38cd59afcba3edcebe143e025574594b001700dec41e59409bdbd0f2a0921039a060badbeb24bee49eb2063f616c0f0f0765d4ca646b20a88ce828f259fcdb9556702cd50b27552210216c23b2ea8e4f11c3f9e22711addb1d16a93964796913830856b568cc3ea21d321034db69f2112f4fb1bb6141bf6e2bd6631f0484d0bd95b16767902c9fe219d4a6f210275562901dd8faae20de0a4166362a4f82188db77dbed4ca887422ea1ec185f145368ae';
 const expectedRskAddress = '0xa23eb4f68d5281d8fcdec31a132303eeb3da1c03';
 
-const bridgeInstanceStub = {
-    methods: ({
-        getFederationSize: () => ({
-            call: () => Promise.resolve(stubFederationSize)
-        }),
-        getFederationThreshold: () => ({
-            call: () => Promise.resolve(stubFederationThreshold)
-        }),
-        getFederationAddress: () => ({
-            call: () => Promise.resolve(stubFederationAddress)
-        }),
-        getFederatorPublicKeyOfType: (index, type) => ({
-            call: () => {
-                if (type === 'btc') {
-                    return Promise.resolve("0x023f0283519167f1603ba92b060146baa054712b938a61f35605ba08773142f4da")
-                } else if (type === 'rsk') {
-                    return Promise.resolve("0x0287b87976b0de1ef3c104b1e951e786aa78f71aedb3af9ec4ef89985bdaaa9f48")
-                } else {
-                    return Promise.resolve("0x02e65505c63cae9fd963afae2aba57a7fda7c5aa5cc9198e30bb2f17497e38fcc4")
-                }
-            }
-        }),
-        getFederationCreationBlockNumber: () => ({
-            call: () => Promise.resolve(stubFederationCreationBlockNumber)
-        }),
-        getActivePowpegRedeemScript: () => ({
-            call: () => Promise.resolve("0x"+stubFederationRedeemScript)
-        })
-    })
+const preIrisActivationHeights = {
+    hopActivationHeight: stubFederationCreationBlockNumber + 200,
+    irisActivationHeight: stubFederationCreationBlockNumber + 100,
+    papyrusActivationHeight: stubFederationCreationBlockNumber - 100
 }
 
-const bridgeInstanceStubERP = {
-    methods: ({
-        getFederationSize: () => ({
-            call: () => Promise.resolve(stubFederationSize)
-        }),
-        getFederationThreshold: () => ({
-            call: () => Promise.resolve(stubFederationThreshold)
-        }),
-        getFederationAddress: () => ({
-            call: () => Promise.resolve(stubFederationAddressERP)
-        }),
-        getFederatorPublicKeyOfType: (index, type) => ({
-            call: () => {
-                if (type === 'btc') {
-                    return Promise.resolve("0x023f0283519167f1603ba92b060146baa054712b938a61f35605ba08773142f4da")
-                } else if (type === 'rsk') {
-                    return Promise.resolve("0x0287b87976b0de1ef3c104b1e951e786aa78f71aedb3af9ec4ef89985bdaaa9f48")
-                } else {
-                    return Promise.resolve("0x02e65505c63cae9fd963afae2aba57a7fda7c5aa5cc9198e30bb2f17497e38fcc4")
-                }
-            }
-        }),
-        getFederationCreationBlockNumber: () => ({
-            call: () => Promise.resolve(stubFederationCreationBlockNumber)
-        }),
-        getActivePowpegRedeemScript: () => ({
-            call: () => Promise.resolve("0x"+stubFederationRedeemScriptERP)
-        })
-    })
+const postIrisActivationHeights = {
+    hopActivationHeight: stubFederationCreationBlockNumber + 100,
+    irisActivationHeight: stubFederationCreationBlockNumber - 100,
+    papyrusActivationHeight: stubFederationCreationBlockNumber - 200
 }
 
-const bridgeStub = {
-    build: () => {
-        return bridgeInstanceStub
-    }
+const postHopActivationHeights = {
+    hopActivationHeight: stubFederationCreationBlockNumber - 100,
+    irisActivationHeight: stubFederationCreationBlockNumber - 200,
+    papyrusActivationHeight: stubFederationCreationBlockNumber - 300
 }
 
-const bridgeStubERP = {
-    build: () => {
-        return bridgeInstanceStubERP
-    }
-}
+const ensureHex = (value) => (value.indexOf('0x') != 0) ? ('0x' + value): value;
 
 const redeemScriptParserStub = { 
     getPowpegRedeemScript: () => {
@@ -114,70 +60,78 @@ const erpDetailsStub = {
     }
 }
 
-const networkSettingsStubPreIris = {
-    getNetworkUpgradesActivationHeights: () => ({
-        getActivationHeight: (networkUpgrade) => {
-            if (networkUpgrade == 'hop') {
-                return stubFederationCreationBlockNumber + 200;
-            }
-
-            if (networkUpgrade == 'iris') {
-                return stubFederationCreationBlockNumber + 100;
-            }
-
-            return stubFederationCreationBlockNumber - 100;
-        }
-    }),
-    getErpDetails: () => {
-        return erpDetailsStub;
-    },
-    getNetworkName: () => {
-        return 'regtest';
+const getBridgeInstanceStub = (options) => {
+    options = options || {};
+    options.federatorPublicKeyOfType = options.federatorPublicKeyOfType || {};
+    const bridgeInstanceStub = {
+        methods: ({
+            getFederationSize: () => ({
+                call: () => Promise.resolve(options.federationSize || stubFederationSize)
+            }),
+            getFederationThreshold: () => ({
+                call: () => Promise.resolve(options.federationThreshold || stubFederationThreshold)
+            }),
+            getFederationAddress: () => ({
+                call: () => Promise.resolve(options.federationAddress || stubFederationAddress)
+            }),
+            getFederatorPublicKeyOfType: (index, type) => ({
+                call: () => {
+                    if (type === 'btc') {
+                        return Promise.resolve(options.federatorPublicKeyOfType.btc || "0x023f0283519167f1603ba92b060146baa054712b938a61f35605ba08773142f4da")
+                    } else if (type === 'rsk') {
+                        return Promise.resolve(options.federatorPublicKeyOfType.rsk || "0x0287b87976b0de1ef3c104b1e951e786aa78f71aedb3af9ec4ef89985bdaaa9f48")
+                    } else {
+                        return Promise.resolve(options.federatorPublicKeyOfType.default || "0x02e65505c63cae9fd963afae2aba57a7fda7c5aa5cc9198e30bb2f17497e38fcc4")
+                    }
+                }
+            }),
+            getFederationCreationBlockNumber: () => ({
+                call: () => Promise.resolve(options.federationCreationNumberBlockNumber || stubFederationCreationBlockNumber)
+            }),
+            getActivePowpegRedeemScript: () => ({
+                call: () => Promise.resolve(ensureHex(options.activePowpegRedeemScript || stubFederationRedeemScript))
+            })
+        })
     }
+
+    return bridgeInstanceStub;
 }
 
-const networkSettingsStubPostIris = {
-    getNetworkUpgradesActivationHeights: () => ({
-        getActivationHeight: (networkUpgrade) => {
-            if (networkUpgrade == 'hop') {
-                return stubFederationCreationBlockNumber + 100;
-            }
-
-            if (networkUpgrade == 'iris') {
-                return stubFederationCreationBlockNumber - 100;
-            }
-
-            return stubFederationCreationBlockNumber - 200;
+const getBridgeStub = (options) => {
+    const bridgeStub = {
+        build: () => {
+            return getBridgeInstanceStub(options);
         }
-    }),
-    getErpDetails: () => {
-        return erpDetailsStub;
-    },
-    getNetworkName: () => {
-        return 'regtest';
     }
+
+    return bridgeStub;
 }
 
-const networkSettingsStubPostHop = {
-    getNetworkUpgradesActivationHeights: () => ({
-        getActivationHeight: (networkUpgrade) => {
-            if (networkUpgrade == 'hop') {
-                return stubFederationCreationBlockNumber - 100;
+const getNetworkSettingsStub = (options) => {
+    options = options || {};
+    const networkSettingsStub = {
+        getNetworkUpgradesActivationHeights: () => ({
+            getActivationHeight: (networkUpgrade) => {
+                if (networkUpgrade == 'hop') {
+                    return options.hopActivationHeight || 0;
+                }
+    
+                if (networkUpgrade == 'iris') {
+                    return options.irisActivationHeight || 0;
+                }
+    
+                return options.papyrusActivationHeight || 0;;
             }
-
-            if (networkUpgrade == 'iris') {
-                return stubFederationCreationBlockNumber - 200;
-            }
-
-            return stubFederationCreationBlockNumber - 300;
+        }),
+        getErpDetails: () => {
+            return options.erpDetails || erpDetailsStub;
+        },
+        getNetworkName: () => {
+            return options.networkName || 'regtest';
         }
-    }),
-    getErpDetails: () => {
-        return erpDetailsStub;
-    },
-    getNetworkName: () => {
-        return 'regtest';
     }
+
+    return networkSettingsStub;
 }
 
 // Test starts here
@@ -185,7 +139,7 @@ describe('Get Powpeg Details', () => {
     beforeEach((done) => {
         powpegDetails = rewire('../powpeg-details');
         powpegDetails.__set__({
-            'bridge': bridgeStub,
+            'bridge': getBridgeStub(),
             'redeemScriptParser': redeemScriptParserStub
         });
         sandbox = sinon.createSandbox();
@@ -198,7 +152,7 @@ describe('Get Powpeg Details', () => {
     });
 
     it('Should Return Powpeg Details Before IRIS', async () => {
-        const result = await powpegDetails('', networkSettingsStubPreIris);
+        const result = await powpegDetails('', getNetworkSettingsStub(preIrisActivationHeights));
 
         assert.equal(result.federationSize, stubFederationSize);
         assert.equal(result.federationThreshold, stubFederationThreshold);
@@ -209,7 +163,7 @@ describe('Get Powpeg Details', () => {
     });
 
     it('Should Return Powpeg Details After IRIS & Before HOP', async () => {
-        const result = await powpegDetails('', networkSettingsStubPostIris);
+        const result = await powpegDetails('', getNetworkSettingsStub(postIrisActivationHeights));
 
         assert.equal(result.federationSize, stubFederationSize);
         assert.equal(result.federationThreshold, stubFederationThreshold);
@@ -220,7 +174,7 @@ describe('Get Powpeg Details', () => {
     })
 
     it('Should Return Powpeg Details After HOP', async () => {
-        const result = await powpegDetails('', networkSettingsStubPostHop);
+        const result = await powpegDetails('', getNetworkSettingsStub(postHopActivationHeights));
 
         assert.equal(result.federationSize, stubFederationSize);
         assert.equal(result.federationThreshold, stubFederationThreshold);
@@ -233,9 +187,14 @@ describe('Get Powpeg Details', () => {
 
 describe('Get Powpeg Details ERP', function () {
     before((done) => {
+        const bridgeStubOptions = {
+            federationAddress: stubFederationAddressERP,
+            activePowpegRedeemScript: stubFederationRedeemScriptERP
+        }
+
         powpegDetails = rewire('../powpeg-details');
         powpegDetails.__set__({
-            'bridge': bridgeStubERP,
+            'bridge': getBridgeStub(bridgeStubOptions),
             'redeemScriptParser': redeemScriptParserStub
         });
         sandbox = sinon.createSandbox();
@@ -248,7 +207,7 @@ describe('Get Powpeg Details ERP', function () {
     });
   
     it('Should Return Powpeg Details After IRIS & Before HOP ErpRedeemScript', async () => {
-        const result = await powpegDetails('', networkSettingsStubPostIris);
+        const result = await powpegDetails('', getNetworkSettingsStub(postIrisActivationHeights));
 
         assert.equal(result.federationSize, stubFederationSize);
         assert.equal(result.federationThreshold, stubFederationThreshold);
@@ -259,7 +218,7 @@ describe('Get Powpeg Details ERP', function () {
     });
 
     it('Should Return Powpeg Details After HOP ErpRedeemScript', async () => {
-        const result = await powpegDetails('', networkSettingsStubPostHop);
+        const result = await powpegDetails('', getNetworkSettingsStub(postHopActivationHeights));
 
         assert.equal(result.federationSize, stubFederationSize);
         assert.equal(result.federationThreshold, stubFederationThreshold);
