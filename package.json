@@ -9,7 +9,7 @@
   "author": "Kelvin Isievwore",
   "license": "ISC",
   "dependencies": {
-    "@rsksmart/rsk-precompiled-abis": "^5.0.0-HOP",
+    "@rsksmart/rsk-precompiled-abis": "^6.0.0-ARROWHEAD",
     "ethereumjs-util": "^7.1.0",
     "powpeg-redeemscript-parser": "git+https://github.com/rsksmart/powpeg-redeemscript-parser"
   },
@@ -20,6 +20,6 @@
     "rewire": "^5.0.0",
     "rsk-network-settings": "git+https://github.com/rsksmart/rsk-network-settings#v0.4.0-beta",
     "sinon": "^11.1.2",
-    "web3": "^1.5.2"
+    "web3": "^4.6.0"
   }
 }
